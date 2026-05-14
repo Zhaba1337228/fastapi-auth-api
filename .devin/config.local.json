@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Exec(ls)",
+      "Exec(mkdir)",
+      "Exec(docker compose)",
+      "Exec(sleep)",
+      "Exec(curl)",
+      "Exec(git init)",
+      "Exec(python)",
+      "Exec(git add)"
+    ]
+  }
+}
