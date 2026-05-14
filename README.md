@@ -45,14 +45,15 @@ docker compose up -d --build
 
 Первый запуск скачает образы и соберёт контейнер — займёт 1-2 минуты.
 
-### 4. Проверить что всё работает
+### 4. Открыть документацию (Swagger)
 
-```bash
-curl http://localhost:8000/
-# {"status":"ok"}
+После запуска открой в браузере:
+
+```
+http://localhost:8000/docs
 ```
 
-Swagger UI (интерактивная документация): **http://localhost:8000/docs**
+Там можно сразу тыкать эндпоинты — нажать на `/register` или `/login` → **Try it out** → вбить email и пароль → **Execute**. Без Postman и curl.
 
 ---
 
