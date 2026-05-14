@@ -28,29 +28,41 @@ def custom_openapi():
         return app.openapi_schema
 
     schema = get_openapi(
-        title="Auth API",
-        version="1.0.0",
+        title="Spark API",
+        version="2.0.0",
         description=(
-            "## Авторизация для мобильного приложения на Kotlin\n\n"
-            "Два одинаковых набора эндпоинтов — `/api/v1` и `/api/v2`.\n\n"
-            "### Как пользоваться:\n"
-            "1. **Зарегистрируйтесь** через `/register` — получите `id` и `email`\n"
-            "2. **Войдите** через `/login` — получите `access_token`\n"
-            "3. Передавайте токен в заголовке: `Authorization: Bearer <token>`\n\n"
-            "### Тело запроса (для register и login одинаковое):\n"
-            "```json\n"
-            '{"email": "user@example.com", "password": "минимум 6 символов"}\n'
-            "```"
+            "## Spark — API для мобильного приложения\n\n"
+            "**v1** — только авторизация (legacy).\n\n"
+            "**v2** — полный набор: авторизация + профиль + статусы заданий.\n\n"
+            "---\n\n"
+            "### Быстрый старт (v2)\n"
+            "1. `POST /api/v2/register` — регистрация по email + password\n"
+            "2. `POST /api/v2/login` — получить `access_token`\n"
+            "3. Все остальные запросы: заголовок `Authorization: Bearer <token>`\n\n"
+            "---\n\n"
+            "### Профиль (`/api/v2/profile`)\n"
+            "| Метод | Описание |\n"
+            "|-------|----------|\n"
+            "| `GET` | Получить профиль (email, courage, completed, skipped, streak, level, notifications) |\n"
+            "| `PATCH` | Частично обновить профиль — передавай только изменившиеся поля |\n\n"
+            "### Задания (`/api/v2/challenges`)\n"
+            "| Метод | URL | Описание |\n"
+            "|-------|-----|----------|\n"
+            "| `GET` | `/challenges` | Все сохранённые статусы заданий пользователя |\n"
+            "| `PUT` | `/challenges/{id}` | Установить статус задания: `open \\| active \\| checking \\| done \\| skipped` |\n"
         ),
         routes=app.routes,
         tags=[
             {
                 "name": "v1",
-                "description": "Версия 1 API — `/api/v1/register`, `/api/v1/login`",
+                "description": "Версия 1 — только регистрация и вход.",
             },
             {
                 "name": "v2",
-                "description": "Версия 2 API — `/api/v2/register`, `/api/v2/login`",
+                "description": (
+                    "Версия 2 — авторизация, профиль, задания. "
+                    "Все эндпоинты кроме `/register` и `/login` требуют `Authorization: Bearer <token>`."
+                ),
             },
             {
                 "name": "Health",
