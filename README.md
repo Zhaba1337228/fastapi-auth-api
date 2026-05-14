@@ -1,71 +1,82 @@
 # fastapi-auth-api
 
-Простое REST API на **FastAPI** + **PostgreSQL** с эндпоинтами регистрации и логина.  
-Два одинаковых набора эндпоинтов — `/api/v1` и `/api/v2`.
+REST API на FastAPI + PostgreSQL. Регистрация и логин, две версии эндпоинтов — `/api/v1` и `/api/v2`.
 
 ---
 
-## Стек
+## Требования
 
-| Компонент | Версия |
-|-----------|--------|
-| Python    | 3.12   |
-| FastAPI   | 0.115  |
-| SQLAlchemy| 2.0    |
-| PostgreSQL| 16     |
-| JWT       | python-jose |
-| Пароли    | bcrypt |
+- [Docker](https://docs.docker.com/get-docker/) + Docker Compose (входит в Docker Desktop)
+- Git
+
+Больше ничего устанавливать не нужно — Python и PostgreSQL крутятся внутри контейнеров.
 
 ---
 
-## Быстрый старт (Docker)
+## Установка и запуск
+
+### 1. Клонировать репозиторий
 
 ```bash
-# 1. Клонировать
-git clone https://github.com/<your-username>/fastapi-auth-api.git
+git clone https://github.com/Zhaba1337228/fastapi-auth-api.git
 cd fastapi-auth-api
-
-# 2. Настроить переменные окружения
-cp .env.example .env
-# Поменяй POSTGRES_PASSWORD и JWT_SECRET в .env
-
-# 3. Запустить
-docker compose up -d --build
-
-# API доступно на http://localhost:8000
-# Swagger UI:  http://localhost:8000/docs
 ```
+
+### 2. Создать файл с переменными окружения
+
+```bash
+cp .env.example .env
+```
+
+Открыть `.env` и поменять два значения:
+
+```env
+POSTGRES_PASSWORD=придумай_свой_пароль
+JWT_SECRET=длинная_случайная_строка
+```
+
+> Остальные параметры можно оставить как есть.
+
+### 3. Запустить
+
+```bash
+docker compose up -d --build
+```
+
+Первый запуск скачает образы и соберёт контейнер — займёт 1-2 минуты.
+
+### 4. Проверить что всё работает
+
+```bash
+curl http://localhost:8000/
+# {"status":"ok"}
+```
+
+Swagger UI (интерактивная документация): **http://localhost:8000/docs**
 
 ---
 
 ## Эндпоинты
 
-### v1
+Все эндпоинты принимают JSON с `email` и `password`.
 
 | Метод | URL | Описание |
 |-------|-----|----------|
-| POST  | `/api/v1/register` | Регистрация |
-| POST  | `/api/v1/login`    | Вход        |
+| POST | `/api/v1/register` | Регистрация |
+| POST | `/api/v1/login` | Вход |
+| POST | `/api/v2/register` | Регистрация |
+| POST | `/api/v2/login` | Вход |
 
-### v2
-
-| Метод | URL | Описание |
-|-------|-----|----------|
-| POST  | `/api/v2/register` | Регистрация |
-| POST  | `/api/v2/login`    | Вход        |
-
----
-
-## Тело запроса (одинаково для v1 и v2)
+### Тело запроса
 
 ```json
 {
   "email": "user@example.com",
-  "password": "secretpass"
+  "password": "минимум6символов"
 }
 ```
 
-### Регистрация — ответ `201`
+### Ответ — регистрация `201`
 
 ```json
 {
@@ -77,33 +88,48 @@ docker compose up -d --build
 }
 ```
 
-### Логин — ответ `200`
+### Ответ — логин `200`
 
 ```json
 {
-  "access_token": "<JWT>",
+  "access_token": "eyJhbGci...",
   "token_type": "bearer"
 }
 ```
 
+Токен передавать в заголовке каждого запроса:
+
+```
+Authorization: Bearer eyJhbGci...
+```
+
 ---
 
-## Переменные окружения
+## Возможные ошибки
 
-| Переменная | По умолчанию | Описание |
-|---|---|---|
-| `POSTGRES_USER` | `postgres` | Пользователь БД |
-| `POSTGRES_PASSWORD` | `postgres` | Пароль БД |
-| `POSTGRES_DB` | `appdb` | Имя базы |
-| `JWT_SECRET` | `change-me-in-production` | Секрет для подписи токенов |
-| `JWT_ALGORITHM` | `HS256` | Алгоритм JWT |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | `1440` | Время жизни токена (мин) |
+| Код | Причина |
+|-----|---------|
+| `409` | Пользователь с таким email уже зарегистрирован |
+| `401` | Неверный email или пароль |
+| `422` | Неверный формат email или пароль короче 6 символов |
 
 ---
 
 ## Остановить
 
 ```bash
-docker compose down          # остановить контейнеры
-docker compose down -v       # остановить + удалить volume с БД
+docker compose down        # остановить, данные в БД сохранятся
+docker compose down -v     # остановить и удалить БД полностью
 ```
+
+---
+
+## Переменные окружения (`.env`)
+
+| Переменная | По умолчанию | Описание |
+|---|---|---|
+| `POSTGRES_USER` | `postgres` | Пользователь БД |
+| `POSTGRES_PASSWORD` | `postgres` | Пароль БД — **обязательно поменяй** |
+| `POSTGRES_DB` | `appdb` | Имя базы данных |
+| `JWT_SECRET` | `change-me-in-production` | Секрет для JWT — **обязательно поменяй** |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `1440` | Время жизни токена в минутах (24 часа) |
